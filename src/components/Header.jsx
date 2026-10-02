@@ -11,13 +11,13 @@ export default function Header({ isCallActive, callState }) {
           </div>
         </div>
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white">
               Aura Skincare
-              <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-normal">
-                AI Voice CX
-              </span>
             </h1>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-normal">
+              AI Voice CX
+            </span>
           </div>
           <p className="text-xs md:text-sm text-slate-400">
             Meet <strong className="text-rose-300 font-medium">Aria</strong> — Your 24/7 D2C Skincare Concierge
