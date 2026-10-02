@@ -1,0 +1,32 @@
+{
+  "name": "aura-skincare-voice-agent",
+  "version": "1.0.0",
+  "description": "Aura Skincare AI Voice Customer Support Agent (Aria)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server/server.js",
+    "server": "node server/server.js",
+    "dev:server": "node --watch server/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@google/genai": "^2.25.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "lucide-react": "^1.50.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "ws": "^8.18.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "playwright": "^1.49.1",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,19 @@
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+dist-ssr/
+
+# Editor & System
+.DS_Store
+Thumbs.db
+*.log
+
+# Internal agent logs
+.agents/
