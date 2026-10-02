@@ -66,17 +66,19 @@ export class AudioRecorder {
       }
 
       // 2. Request microphone stream with voice-optimized acoustic constraints
-      const constraints = {
-        audio: {
-          sampleRate: this.targetSampleRate,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      };
-
-      this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      try {
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+      } catch (err) {
+        console.warn('[AudioRecorder] Advanced audio constraints failed, falling back to basic audio:', err);
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
 
       // 3. Initialize AudioContext
       this.audioContext = new AudioContextClass();

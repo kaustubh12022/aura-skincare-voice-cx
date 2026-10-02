@@ -150,7 +150,7 @@ export class VoiceAgentCoordinator {
     this.setState(CALL_STATES.CONNECTING);
 
     try {
-      // 1. Initialize AudioPlayer
+      // 1. Initialize AudioPlayer & unlock speaker AudioContext during user click gesture
       this.audioPlayer = new AudioPlayer({
         onPlaybackStateChange: (isPlaying) => {
           if (isPlaying && this.state !== CALL_STATES.SPEAKING && this.state !== CALL_STATES.ENDED) {
@@ -163,8 +163,9 @@ export class VoiceAgentCoordinator {
           console.error('[AudioPlayer Error]:', err);
         }
       });
+      await this.audioPlayer.initAudioContext();
 
-      // 2. Initialize AudioRecorder
+      // 2. Initialize AudioRecorder & acquire mic stream during user click gesture
       this.audioRecorder = new AudioRecorder({
         onAudioData: (base64Chunk) => {
           // Stream microphone audio to backend over WebSocket
@@ -180,6 +181,7 @@ export class VoiceAgentCoordinator {
           this.handleError(err.message || 'Microphone error');
         }
       });
+      await this.audioRecorder.start();
 
       // 3. Connect WebSocket
       const WsClass = this.customWebSocket;
@@ -189,15 +191,9 @@ export class VoiceAgentCoordinator {
 
       this.socket = new WsClass(this.wsUrl);
 
-      this.socket.onopen = async () => {
-        try {
-          await this.audioRecorder.start();
-          this.startHeartbeat();
-          this.setState(CALL_STATES.LISTENING);
-        } catch (micErr) {
-          this.handleError(`Microphone access error: ${micErr.message}`);
-          this.endCall();
-        }
+      this.socket.onopen = () => {
+        this.startHeartbeat();
+        this.setState(CALL_STATES.LISTENING);
       };
 
       this.socket.onmessage = (event) => {
