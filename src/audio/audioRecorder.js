@@ -39,6 +39,7 @@ export class AudioRecorder {
 
     this.isRecording = false;
     this.isMuted = false;
+    this.watchdogInterval = null;
   }
 
   /**
@@ -129,6 +130,14 @@ export class AudioRecorder {
       this.muteGain.connect(this.audioContext.destination);
 
       this.isRecording = true;
+
+      // Keep-awake watchdog for AudioContext to prevent browser auto-suspending on silence
+      if (this.watchdogInterval) clearInterval(this.watchdogInterval);
+      this.watchdogInterval = setInterval(() => {
+        if (this.isRecording && this.audioContext && this.audioContext.state === 'suspended') {
+          this.audioContext.resume().catch(() => {});
+        }
+      }, 2500);
     } catch (err) {
       this.cleanup();
       if (this.onError) {
@@ -172,6 +181,11 @@ export class AudioRecorder {
   cleanup() {
     this.isRecording = false;
     this.isMuted = false;
+
+    if (this.watchdogInterval) {
+      clearInterval(this.watchdogInterval);
+      this.watchdogInterval = null;
+    }
 
     if (this.processorNode) {
       try {

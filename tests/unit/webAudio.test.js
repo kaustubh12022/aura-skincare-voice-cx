@@ -568,6 +568,55 @@ describe('Milestone 2: Web Audio Engine & Audio Conversion Tests', () => {
       expect(normalizeCallState('ended')).toBe('Ended');
       expect(normalizeCallState('Listening')).toBe('Listening');
     });
+
+    it('TC-2.6.9: accumulates streaming transcript deltas into single turn in-place without bubble fragmentation', () => {
+      // Delta chunk 1
+      coordinator.handleSocketMessage(JSON.stringify({
+        type: 'transcript',
+        role: 'aria',
+        text: 'Sure Rahul',
+        turnId: 'turn_aria_1',
+        isFinal: false
+      }));
+
+      expect(coordinator.transcripts.length).toBe(1);
+      expect(coordinator.transcripts[0].text).toBe('Sure Rahul');
+
+      // Delta chunk 2 with same turnId
+      coordinator.handleSocketMessage(JSON.stringify({
+        type: 'transcript',
+        role: 'aria',
+        text: 'Sure Rahul, that order',
+        turnId: 'turn_aria_1',
+        isFinal: false
+      }));
+
+      expect(coordinator.transcripts.length).toBe(1);
+      expect(coordinator.transcripts[0].text).toBe('Sure Rahul, that order');
+
+      // Final complete turn
+      coordinator.handleSocketMessage(JSON.stringify({
+        type: 'transcript',
+        role: 'aria',
+        text: 'Sure Rahul, that order is out for delivery.',
+        turnId: 'turn_aria_1',
+        isFinal: true
+      }));
+
+      expect(coordinator.transcripts.length).toBe(1);
+      expect(coordinator.transcripts[0].text).toBe('Sure Rahul, that order is out for delivery.');
+      expect(coordinator.transcripts[0].isFinal).toBe(true);
+    });
+
+    it('TC-2.6.10: handles heartbeat pong messages without state disruption', () => {
+      coordinator.setState(CALL_STATES.LISTENING);
+      coordinator.handleSocketMessage(JSON.stringify({
+        type: 'pong',
+        timestamp: Date.now()
+      }));
+
+      expect(coordinator.state).toBe(CALL_STATES.LISTENING);
+    });
   });
 
   // =========================================================================

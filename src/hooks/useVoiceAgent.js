@@ -192,6 +192,7 @@ export class VoiceAgentCoordinator {
       this.socket.onopen = async () => {
         try {
           await this.audioRecorder.start();
+          this.startHeartbeat();
           this.setState(CALL_STATES.LISTENING);
         } catch (micErr) {
           this.handleError(`Microphone access error: ${micErr.message}`);
@@ -222,6 +223,32 @@ export class VoiceAgentCoordinator {
   }
 
   /**
+   * Starts a 15-second heartbeat ping to prevent proxy/NAT/server timeouts during silence.
+   */
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatTimer = setInterval(() => {
+      if (this.socket && this.socket.readyState === (this.customWebSocket?.OPEN ?? 1)) {
+        try {
+          this.socket.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    }, 15000);
+  }
+
+  /**
+   * Stops the heartbeat interval.
+   */
+  stopHeartbeat() {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+  }
+
+  /**
    * Handles incoming WebSocket messages from the backend relay.
    * @param {string|ArrayBuffer} data
    */
@@ -231,6 +258,11 @@ export class VoiceAgentCoordinator {
       const message = typeof data === 'string' ? JSON.parse(data) : JSON.parse(new TextDecoder().decode(data));
 
       switch (message.type) {
+        case 'heartbeat':
+        case 'pong':
+          // Keep-alive acknowledgment received
+          break;
+
         case 'status':
           if (message.state) {
             this.setState(message.state);
@@ -253,14 +285,41 @@ export class VoiceAgentCoordinator {
           break;
 
         case 'transcript':
-          if (message.text) {
-            const transcriptItem = {
-              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              role: message.role || 'aria',
-              text: message.text,
-              timestamp: message.timestamp || new Date().toISOString()
-            };
-            this.transcripts.push(transcriptItem);
+          if (message.text !== undefined && message.text !== null) {
+            const role = message.role || 'aria';
+            const turnId = message.turnId;
+            const isFinal = Boolean(message.isFinal);
+
+            // Locate active turn to update in-place, or create new turn
+            let existingIndex = -1;
+            if (turnId) {
+              existingIndex = this.transcripts.findIndex((t) => t.turnId === turnId);
+            }
+            if (existingIndex === -1 && this.transcripts.length > 0) {
+              const last = this.transcripts[this.transcripts.length - 1];
+              if (!last.isFinal && last.role === role && (!turnId || !last.turnId)) {
+                existingIndex = this.transcripts.length - 1;
+              }
+            }
+
+            if (existingIndex !== -1) {
+              this.transcripts[existingIndex] = {
+                ...this.transcripts[existingIndex],
+                text: message.text,
+                isFinal: isFinal || this.transcripts[existingIndex].isFinal,
+                timestamp: message.timestamp || this.transcripts[existingIndex].timestamp
+              };
+            } else {
+              const transcriptItem = {
+                id: message.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                turnId: turnId || `turn_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                role: role,
+                text: message.text,
+                timestamp: message.timestamp || new Date().toISOString(),
+                isFinal: isFinal
+              };
+              this.transcripts.push(transcriptItem);
+            }
             this.emit('transcript', [...this.transcripts]);
           }
           break;
@@ -354,6 +413,8 @@ export class VoiceAgentCoordinator {
    * Cleans up audio contexts and media streams.
    */
   cleanupHardware() {
+    this.stopHeartbeat();
+
     if (this.audioRecorder) {
       try {
         this.audioRecorder.cleanup();

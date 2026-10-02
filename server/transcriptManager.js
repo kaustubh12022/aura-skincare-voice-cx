@@ -37,10 +37,25 @@ export class TranscriptManager {
         toolCalls: []
       };
     } else {
-      // Append streaming chunk to existing turn
-      this.currentTurn.text += textChunk;
+      // Append streaming chunk to existing turn with smart word spacing
+      if (this.currentTurn.text.length > 0 &&
+          !/\s$/.test(this.currentTurn.text) &&
+          !/^\s/.test(textChunk) &&
+          !/^[.,!?;:'")\]}]/.test(textChunk)) {
+        this.currentTurn.text += ' ' + textChunk;
+      } else {
+        this.currentTurn.text += textChunk;
+      }
     }
 
+    return this.currentTurn;
+  }
+
+  /**
+   * Returns the currently active turn if any.
+   * @returns {object|null}
+   */
+  getCurrentTurn() {
     return this.currentTurn;
   }
 
@@ -70,12 +85,16 @@ export class TranscriptManager {
 
   /**
    * Mark the active turn as completed (e.g. on serverContent.turnComplete: true).
+   * @returns {object|null} The completed turn
    */
   completeTurn() {
     if (this.currentTurn) {
       this.currentTurn.isComplete = true;
+      const turn = this.currentTurn;
       this.finalizeCurrentTurn();
+      return turn;
     }
+    return null;
   }
 
   /**

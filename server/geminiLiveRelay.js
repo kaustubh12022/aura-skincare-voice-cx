@@ -96,6 +96,30 @@ export function handleGeminiLiveRelay(clientWs, req) {
     return;
   }
 
+  // Heartbeat ping interval to keep Gemini upstream and client connection alive through silence
+  let heartbeatInterval = null;
+
+  const startHeartbeat = () => {
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(() => {
+      // 1. Keep upstream Gemini WebSocket connection alive through silence
+      if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
+        try {
+          geminiWs.ping();
+        } catch (e) {
+          console.warn('[GeminiRelay] Upstream ping failed:', e.message);
+        }
+      }
+
+      // 2. Keep client WebSocket connection alive through NAT / proxy timeouts
+      if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+        try {
+          clientWs.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }));
+        } catch (e) {}
+      }
+    }, 15000);
+  };
+
   /**
    * Helper: Safely send message to client
    */
@@ -159,6 +183,11 @@ export function handleGeminiLiveRelay(clientWs, req) {
     console.log('[GeminiRelay] Upstream Gemini Live connection opened.');
     sendToClient({ type: 'status', state: 'connecting' });
     sendSessionSetup();
+    startHeartbeat();
+  });
+
+  geminiWs.on('pong', () => {
+    // Upstream Gemini connection is healthy
   });
 
   geminiWs.on('message', async (rawMessage) => {
@@ -191,7 +220,19 @@ export function handleGeminiLiveRelay(clientWs, req) {
         if (interrupted === true) {
           console.log('[GeminiRelay] Interruption detected by Gemini VAD. Signaling client flush.');
           currentAriaChunkText = '';
+          const activeTurn = transcriptManager.getCurrentTurn();
           transcriptManager.handleInterruption();
+          if (activeTurn && activeTurn.role === 'aria') {
+            sendToClient({
+              type: 'transcript',
+              role: 'aria',
+              text: activeTurn.text,
+              turnId: activeTurn.id,
+              isFinal: true,
+              interrupted: true,
+              timestamp: activeTurn.timestamp
+            });
+          }
           sendToClient({ type: 'interrupted' });
           sendToClient({ type: 'status', state: 'listening' });
           return;
@@ -212,49 +253,83 @@ export function handleGeminiLiveRelay(clientWs, req) {
             // Accumulate any text response
             if (part.text) {
               currentAriaChunkText += part.text;
-              transcriptManager.appendToken('aria', part.text);
+              // If no outputTranscription is provided, use modelTurn text
+              if (!outputTranscription || !outputTranscription.text) {
+                const turn = transcriptManager.appendToken('aria', part.text);
+                if (turn) {
+                  sendToClient({
+                    type: 'transcript',
+                    role: 'aria',
+                    text: turn.text,
+                    turnId: turn.id,
+                    isFinal: false,
+                    timestamp: turn.timestamp
+                  });
+                }
+              }
             }
           }
         }
 
-        // C. Input Transcription (User Speech)
+        // C. Input Transcription (User Speech streaming)
         if (inputTranscription && inputTranscription.text) {
-          const userText = inputTranscription.text.trim();
+          const userText = inputTranscription.text;
           if (userText) {
             console.log(`[Transcript] User: "${userText}"`);
-            const turn = transcriptManager.addTurn('user', userText);
-            sendToClient({
-              type: 'transcript',
-              role: 'user',
-              text: userText,
-              timestamp: turn ? turn.timestamp : new Date().toISOString()
-            });
+            const turn = transcriptManager.appendToken('user', userText);
+            if (turn) {
+              sendToClient({
+                type: 'transcript',
+                role: 'user',
+                text: turn.text,
+                turnId: turn.id,
+                isFinal: false,
+                timestamp: turn.timestamp
+              });
+            }
           }
         }
 
-        // D. Output Transcription (Aria Speech)
+        // D. Output Transcription (Aria Speech streaming)
         if (outputTranscription && outputTranscription.text) {
-          const ariaText = outputTranscription.text.trim();
+          const ariaText = outputTranscription.text;
           if (ariaText) {
             console.log(`[Transcript] Aria: "${ariaText}"`);
-            const turn = transcriptManager.addTurn('aria', ariaText);
-            sendToClient({
-              type: 'transcript',
-              role: 'aria',
-              text: ariaText,
-              timestamp: turn ? turn.timestamp : new Date().toISOString()
-            });
+            const turn = transcriptManager.appendToken('aria', ariaText);
+            if (turn) {
+              sendToClient({
+                type: 'transcript',
+                role: 'aria',
+                text: turn.text,
+                turnId: turn.id,
+                isFinal: false,
+                timestamp: turn.timestamp
+              });
+            }
           }
         }
 
-        // E. Turn Complete
+        // E. Turn Complete - finalize active turn
         if (turnComplete === true) {
+          const completedTurn = transcriptManager.getCurrentTurn();
           transcriptManager.completeTurn();
-          if (currentAriaChunkText.trim() && (!outputTranscription || !outputTranscription.text)) {
+          if (completedTurn) {
+            sendToClient({
+              type: 'transcript',
+              role: completedTurn.role,
+              text: completedTurn.text,
+              turnId: completedTurn.id,
+              isFinal: true,
+              timestamp: completedTurn.timestamp
+            });
+          } else if (currentAriaChunkText.trim()) {
+            const turn = transcriptManager.addTurn('aria', currentAriaChunkText.trim());
             sendToClient({
               type: 'transcript',
               role: 'aria',
               text: currentAriaChunkText.trim(),
+              turnId: turn ? turn.id : undefined,
+              isFinal: true,
               timestamp: new Date().toISOString()
             });
           }
@@ -339,7 +414,17 @@ export function handleGeminiLiveRelay(clientWs, req) {
 
   geminiWs.on('close', (code, reason) => {
     console.log(`[GeminiRelay] Upstream Gemini WebSocket closed (code: ${code}, reason: ${reason?.toString()})`);
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
     if (!isSessionEnded) {
+      if (code !== 1000) {
+        sendToClient({
+          type: 'error',
+          message: 'Gemini Live upstream connection closed. Click "Start Voice Call" to reconnect.'
+        });
+      }
       finalizeSession();
     }
   });
@@ -350,6 +435,11 @@ export function handleGeminiLiveRelay(clientWs, req) {
   const finalizeSession = async () => {
     if (isSessionEnded) return;
     isSessionEnded = true;
+
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
 
     console.log('[GeminiRelay] Finalizing session. Generating structured call outcome...');
     sendToClient({ type: 'status', state: 'ended' });
@@ -452,6 +542,8 @@ export function handleGeminiLiveRelay(clientWs, req) {
           type: 'transcript',
           role: 'user',
           text: parsed.text,
+          turnId: turn ? turn.id : undefined,
+          isFinal: true,
           timestamp: turn ? turn.timestamp : new Date().toISOString()
         });
 
@@ -465,6 +557,12 @@ export function handleGeminiLiveRelay(clientWs, req) {
       if (parsed.type === 'end_call') {
         console.log('[Client] Received end_call command from client.');
         finalizeSession();
+        return;
+      }
+
+      // D. Heartbeat / Ping from client
+      if (parsed.type === 'ping') {
+        sendToClient({ type: 'pong', timestamp: Date.now() });
         return;
       }
 
