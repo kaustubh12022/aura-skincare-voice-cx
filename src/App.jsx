@@ -10,7 +10,7 @@ import useVoiceAgent, { CALL_STATES } from './hooks/useVoiceAgent.js';
 import { AlertCircle, Sparkles, Shield, Truck, RotateCcw, CreditCard, Sparkle } from 'lucide-react';
 
 export default function App() {
-  const [isDemoGuideOpen, setIsDemoGuideOpen] = useState(false);
+  
 
   const {
     callState,
@@ -42,7 +42,7 @@ export default function App() {
       <Header
         isCallActive={isCallActive}
         callState={callState}
-        onOpenDemoGuide={() => setIsDemoGuideOpen(true)}
+        
       />
 
       {/* Main Container */}
@@ -220,18 +220,13 @@ export default function App() {
         </section>
       </main>
 
-      {/* Discrete Client Order Ledger Modal (For Evaluation & Demo Verification) */}
-      {isDemoGuideOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 max-w-4xl w-full border border-[#EBE5DC] shadow-2xl relative">
-            <SampleOrders
-              onSelectPrompt={handleSelectPrompt}
-              isCallActive={isCallActive}
-              onClose={() => setIsDemoGuideOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+      {/* Permanent Test Orders Helper */}
+      <div className="mt-8 bg-white/50 backdrop-blur-md rounded-3xl p-6 border border-[#EBE5DC] shadow-sm">
+        <SampleOrders
+          onSelectPrompt={handleSelectPrompt}
+          isCallActive={isCallActive}
+        />
+      </div>
 
       {/* Footer */}
       <footer className="mt-12 text-center text-xs text-[#78716C]/80 tracking-wide">
@@ -240,3 +235,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, Shield, Clock, Compass, HelpCircle } from 'lucide-react';
 
-export default function Header({ onOpenDemoGuide }) {
+export default function Header({  }) {
   return (
     <header className="w-full max-w-6xl mx-auto pt-7 pb-5 px-6 flex flex-col md:flex-row items-center justify-between gap-5 border-b border-[#EBE5DC]">
       <div className="flex items-center gap-4">
@@ -32,9 +32,9 @@ export default function Header({ onOpenDemoGuide }) {
           <Shield className="w-3.5 h-3.5 text-[#C5A880]" />
           <span className="text-[11px] tracking-wide">Authentic Formulations</span>
         </div>
-        {onOpenDemoGuide && (
+        { && (
           <button
-            onClick={onOpenDemoGuide}
+            onClick={}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#FDF2F4] border border-[#EBE5DC] hover:border-[#F1C2CA] text-[#78716C] hover:text-[#A9525B] transition-all text-[11px] shadow-xs cursor-pointer"
             title="View Sample Order Records for Testing"
           >

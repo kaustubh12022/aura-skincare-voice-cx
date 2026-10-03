@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
+import rateLimit from 'express-rate-limit';
 import { handleGeminiLiveRelay } from './geminiLiveRelay.js';
 import { getOrderDetails, getAllOrders } from './orderDatabase.js';
 
@@ -26,14 +27,43 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// Trust proxy for accurate rate-limiting IPs on Render
+app.set('trust proxy', 1);
+
+// Rate Limiting Middleware
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiter to all API routes
+app.use('/api/', apiLimiter);
+
+// Strict CORS Middleware
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  process.env.PUBLIC_APP_URL || 'https://aura-skincare-voice-cx.onrender.com'
+];
+
 app.use(cors({
-  origin: '*',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10mb' }));
+// Reduce payload limit from 10mb to 1mb for standard text JSON
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Healthcheck Endpoint
@@ -124,7 +154,19 @@ app.use((err, req, res, next) => {
 const server = http.createServer(app);
 
 // Mount WebSocket Server on /ws
-const wss = new WebSocketServer({ server, path: '/ws' });
+const wss = new WebSocketServer({ 
+  server, 
+  path: '/ws',
+  verifyClient: (info, done) => {
+    const origin = info.origin || info.req.headers.origin;
+    if (!origin || allowedOrigins.includes(origin)) {
+      done(true); // Accept
+    } else {
+      console.warn(`[WebSocket] Rejected CSWSH connection attempt from unauthorized origin: ${origin}`);
+      done(false, 403, 'Forbidden Origin'); // Reject
+    }
+  }
+});
 
 wss.on('connection', (clientWs, req) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;

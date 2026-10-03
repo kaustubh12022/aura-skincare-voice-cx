@@ -66,13 +66,13 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
           <span className="text-[11px] text-[#78716C] hidden sm:flex items-center gap-1">
             <Info className="w-3.5 h-3.5 text-[#A8A29E]" /> Click ID to copy
           </span>
-          {onClose && (
-            <button
+          
+            <!--
               onClick={onClose}
               className="p-1 rounded-full text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF8F5] border border-[#EBE5DC] transition-colors"
             >
-              ✕
-            </button>
+              
+            -->
           )}
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
           >
             <div>
               <div className="flex items-center justify-between mb-2.5">
-                <button
+                <!--
                   onClick={() => handleCopy(order.id)}
                   className="font-mono text-xs font-bold text-[#A9525B] hover:text-[#8C434A] flex items-center gap-1.5 bg-[#FDF2F4] px-2.5 py-1 rounded-md border border-[#F1C2CA] shadow-2xs transition-colors cursor-pointer"
                   title="Click to copy Order ID"
@@ -96,7 +96,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
                   ) : (
                     <Copy className="w-3 h-3 text-[#C86D76]" />
                   )}
-                </button>
+                -->
                 <span
                   className={`text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border font-semibold ${order.statusColor}`}
                 >
@@ -118,7 +118,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
                 <strong className="text-[#1C1917] block mb-0.5">Policy Outcome:</strong> {order.policyNote}
               </div>
               {isCallActive && onSelectPrompt && (
-                <button
+                <!--
                   onClick={() => {
                     onSelectPrompt(order.promptSuggestion);
                     if (onClose) onClose();
@@ -127,7 +127,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
                 >
                   <span>Inquire about this order</span>
                   <ArrowUpRight className="w-3 h-3 text-[#C86D76]" />
-                </button>
+                -->
               )}
             </div>
           </div>

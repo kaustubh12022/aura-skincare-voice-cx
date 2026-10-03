@@ -112,9 +112,22 @@ export function handleGeminiLiveRelay(clientWs, req) {
 
   // Heartbeat ping interval to keep Gemini upstream and client connection alive through silence
   let heartbeatInterval = null;
+  // Maximum call duration: 5 minutes (300,000 ms)
+  let maxCallDurationTimer = null;
 
   const startHeartbeat = () => {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
+    if (maxCallDurationTimer) clearTimeout(maxCallDurationTimer);
+
+    // Hard timeout after 5 minutes
+    maxCallDurationTimer = setTimeout(() => {
+      console.log('[GeminiRelay] Maximum 5-minute call duration reached. Terminating session.');
+      if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(JSON.stringify({ type: 'error', message: 'Maximum call duration of 5 minutes reached.' }));
+      }
+      finalizeSession();
+    }, 5 * 60 * 1000);
+
     heartbeatInterval = setInterval(() => {
       // 1. Keep upstream Gemini WebSocket connection alive through silence
       if (geminiWs && geminiWs.readyState === WebSocket.OPEN) {
@@ -445,6 +458,10 @@ export function handleGeminiLiveRelay(clientWs, req) {
       clearInterval(heartbeatInterval);
       heartbeatInterval = null;
     }
+    if (maxCallDurationTimer) {
+      clearTimeout(maxCallDurationTimer);
+      maxCallDurationTimer = null;
+    }
     if (!isSessionEnded) {
       if (code !== 1000) {
         sendToClient({
@@ -466,6 +483,10 @@ export function handleGeminiLiveRelay(clientWs, req) {
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
       heartbeatInterval = null;
+    }
+    if (maxCallDurationTimer) {
+      clearTimeout(maxCallDurationTimer);
+      maxCallDurationTimer = null;
     }
 
     console.log('[GeminiRelay] Finalizing session. Generating structured call outcome...');

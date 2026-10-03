@@ -4,7 +4,7 @@
 > Candidate: **Kaustubh Sanjay Kale**  
 > Live Application URL: *(Deployed on Render)*  
 > GitHub Repository: [https://github.com/kaustubh12022/aura-skincare-voice-cx](https://github.com/kaustubh12022/aura-skincare-voice-cx)  
-> Technology: **Google Gemini 3.1 Flash Live (Multimodal WebSocket API) • Web Audio API • Node.js/Express • React (Vite)**
+> Technology: **Google Gemini 3.8 Live (Multimodal WebSocket API) • Web Audio API • Node.js/Express • React (Vite)**
 
 ---
 
@@ -78,7 +78,7 @@ Here is how the entire system works under the hood, explained simply from end to
 [ Phase 2: Node.js Relay Server (server.js) ]
        │  (Bidirectional WebSocket: bidiGenerateContent)
        ▼
-[ Google Gemini 3.1 Flash Live API ] ──(Tool Call)──► [ Phase 3: Order Database (ORD-101/102/103) ]
+[ Google Gemini 3.8 Live API ] ──(Tool Call)──► [ Phase 3: Order Database (ORD-101/102/103) ]
        │  (24kHz Linear PCM Audio)
        ▼
 [ Phase 2: Node.js Relay Server ]
@@ -118,7 +118,7 @@ Here is how the entire system works under the hood, explained simply from end to
 
 | Assessment Requirement | How It Is Implemented |
 |---|---|
-| **Voice Conversation** | Natural conversational speech using Gemini 3.1 Flash Live with Indian persona voice (`Sulafat`). |
+| **Voice Conversation** | Natural conversational speech using Gemini 3.8 Live with Indian persona voice (`Sulafat`). |
 | **Persona (Aria)** | Polite, empathetic, and concise skincare specialist persona defined in system prompt. |
 | **Policy Guardrails** | Strict enforcement of shipping thresholds, 7-day returns, processing cancellations, and COD limits. |
 | **Out-of-Scope Deflection** | Deflects non-skincare requests (travel, tech, general trivia) politely. |
@@ -142,7 +142,7 @@ Here is how the entire system works under the hood, explained simply from end to
 ## 7. Section 9: Tell Us How You Think
 
 ### 1. Why did you choose your particular architecture and technology stack?
-Instead of a traditional modular pipeline (**Speech-to-Text $\to$ LLM $\to$ Text-to-Speech**), I chose **Google Gemini 3.1 Flash Live API (`bidiGenerateContent` over WebSockets)** with a Node.js/Express relay and a React frontend:
+Instead of a traditional modular pipeline (**Speech-to-Text $\to$ LLM $\to$ Text-to-Speech**), I chose **Google Gemini 3.8 Live API (`bidiGenerateContent` over WebSockets)** with a Node.js/Express relay and a React frontend:
 * **Eliminating Latency Stacking:** In a modular pipeline, transcribing speech takes ~1s, LLM reasoning takes ~1s, and speech synthesis takes ~1s. The user suffers an awkward 3–4 second delay. Gemini Live processes audio tokens directly in a single stateful stream, slashing latency to ~300ms.
 * **Security & Clean Architecture:** Running a server-side WebSocket proxy ensures the `GEMINI_API_KEY` remains strictly confidential on the server, while allowing backend audit logging of all tool invocations.
 * **Zero-CORS Full-Stack Hosting:** The Express backend serves both the `/ws` WebSocket endpoint and the static production `dist/` bundle on a single port, making public deployment seamless.
@@ -200,7 +200,7 @@ npm install
 
 # 3. Create .env file with your Gemini API key
 echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
-echo "PORT=3001" >> .env
+echo "PORT=3001" >> .env ; echo "NODE_ENV=development" >> .env
 
 # 4. Build frontend
 npm run build
