@@ -32,16 +32,6 @@ export default function Header({  }) {
           <Shield className="w-3.5 h-3.5 text-[#C5A880]" />
           <span className="text-[11px] tracking-wide">Authentic Formulations</span>
         </div>
-        { && (
-          <button
-            onClick={}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#FDF2F4] border border-[#EBE5DC] hover:border-[#F1C2CA] text-[#78716C] hover:text-[#A9525B] transition-all text-[11px] shadow-xs cursor-pointer"
-            title="View Sample Order Records for Testing"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-[#C86D76]" />
-            <span className="font-medium">Order Lookup Guide</span>
-          </button>
-        )}
       </div>
     </header>
   );
