@@ -157,22 +157,12 @@ export default function App() {
 
           {/* Right Column: Live Transcript & Post-Call Summary */}
           <div className="lg:col-span-6 flex flex-col gap-5">
-            {callOutcome ? (
-              <div className="flex flex-col gap-4">
-                <CallSummary callOutcome={callOutcome} />
-                <TranscriptView
-                  transcripts={transcripts}
-                  toolEvents={toolEvents}
-                  callState={callState}
-                />
-              </div>
-            ) : (
-              <TranscriptView
-                transcripts={transcripts}
-                toolEvents={toolEvents}
-                callState={callState}
-              />
-            )}
+            <TranscriptView
+              transcripts={transcripts}
+              toolEvents={toolEvents}
+              callState={callState}
+            />
+            <CallSummary callOutcome={callOutcome} />
           </div>
         </div>
 
