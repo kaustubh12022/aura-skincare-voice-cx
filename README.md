@@ -144,7 +144,7 @@ Here is how the entire system works under the hood, explained simply from end to
 ### 1. Why did you choose your particular architecture and technology stack?
 Instead of a traditional modular pipeline (**Speech-to-Text $\to$ LLM $\to$ Text-to-Speech**), I chose **Google Gemini 3.8 Live API (`bidiGenerateContent` over WebSockets)** with a Node.js/Express relay and a React frontend:
 * **Eliminating Latency Stacking:** In a modular pipeline, transcribing speech takes ~1s, LLM reasoning takes ~1s, and speech synthesis takes ~1s. The user suffers an awkward 3–4 second delay. Gemini Live processes audio tokens directly in a single stateful stream, slashing latency to ~300ms.
-* **Security & Clean Architecture:** Running a server-side WebSocket proxy ensures the `GEMINI_API_KEY` remains strictly confidential on the server, while allowing backend audit logging of all tool invocations.
+* **Security & Clean Architecture:** Running a server-side proxy protects the `GEMINI_API_KEY`. The backend is heavily hardened for production: I implemented **express-rate-limit** (100 req/15min) against DoS attacks, **strict CORS** policies, explicit **Origin verification** on the WebSocket upgrade to prevent CSWSH (Cross-Site WebSocket Hijacking), and a **5-minute max session duration** to forcefully close idle websockets and prevent API quota exhaustion.
 * **Zero-CORS Full-Stack Hosting:** The Express backend serves both the `/ws` WebSocket endpoint and the static production `dist/` bundle on a single port, making public deployment seamless.
 
 ### 2. What was the most difficult part of the assignment, and how did you solve it?
