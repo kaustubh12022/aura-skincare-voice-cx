@@ -8,7 +8,7 @@
  */
 
 import WebSocket from 'ws';
-import { getOrderDetails } from './orderDatabase.js';
+import { getOrderDetails, cancelOrder } from './orderDatabase.js';
 import { getSystemPolicyInstruction } from './brandPolicy.js';
 import { TranscriptManager } from './transcriptManager.js';
 import { generateCallSummary } from './summarizer.js';
@@ -26,6 +26,20 @@ export const TOOLS_CONFIG = [
       {
         name: 'get_order_details',
         description: 'Look up live shipping status, courier tracking, and item details for an Aura Skincare customer order using their Order ID.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            order_id: {
+              type: 'STRING',
+              description: 'The customer order identifier, formatted as ORD-XXX (e.g. ORD-101, ORD-102, ORD-103).'
+            }
+          },
+          required: ['order_id']
+        }
+      },
+      {
+        name: 'cancel_order',
+        description: 'Cancel a customer order if it is still in Processing status. Will mutate the database and initiate a refund.',
         parameters: {
           type: 'OBJECT',
           properties: {
@@ -358,6 +372,22 @@ export function handleGeminiLiveRelay(clientWs, req) {
             sendToClient({
               type: 'tool_event',
               tool: 'get_order_details',
+              args: call.args,
+              result: toolOutput,
+              timestamp: new Date().toISOString()
+            });
+          } else if (call.name === 'cancel_order') {
+            const orderId = call.args?.order_id;
+            toolOutput = cancelOrder(orderId);
+            console.log(`[ToolCall Result - Cancel] For ${orderId}:`, toolOutput.status);
+
+            // Record in transcript manager
+            transcriptManager.recordToolCall(call.id, 'cancel_order', call.args, toolOutput);
+
+            // Notify client UI in real time
+            sendToClient({
+              type: 'tool_event',
+              tool: 'cancel_order',
               args: call.args,
               result: toolOutput,
               timestamp: new Date().toISOString()
