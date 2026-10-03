@@ -206,10 +206,8 @@ export class VoiceAgentCoordinator {
       };
 
       this.socket.onclose = () => {
-        if (this.state !== CALL_STATES.ENDED) {
-          this.cleanupHardware();
-          this.setState(CALL_STATES.ENDED);
-        }
+        this.cleanupHardware();
+        this.setState(CALL_STATES.ENDED);
       };
     } catch (err) {
       this.handleError(err.message || 'Failed to start call');
@@ -401,7 +399,18 @@ export class VoiceAgentCoordinator {
       }
     }
 
-    this.cleanupHardware();
+    // Stop audio immediately so we stop listening/speaking
+    if (this.audioRecorder) {
+      try { this.audioRecorder.cleanup(); } catch (e) {}
+      this.audioRecorder = null;
+    }
+    if (this.audioPlayer) {
+      try { this.audioPlayer.cleanup(); } catch (e) {}
+      this.audioPlayer = null;
+    }
+
+    // Do NOT close the socket here (leave this.cleanupHardware() for onclose)
+    // The backend needs time to generate and send the call_outcome JSON before it closes the socket.
     this.setState(CALL_STATES.ENDED);
   }
 
