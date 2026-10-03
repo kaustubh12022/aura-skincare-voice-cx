@@ -14,7 +14,7 @@ import { TranscriptManager } from './transcriptManager.js';
 import { generateCallSummary } from './summarizer.js';
 
 const GEMINI_LIVE_WS_BASE = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
-const TARGET_MODEL = 'models/gemini-3.1-flash-live-preview';
+const TARGET_MODEL = 'models/gemini-3.8-live';
 const VOICE_NAME = 'Sulafat'; // Official warm prebuilt voice in Gemini Live API
 
 /**
@@ -153,9 +153,6 @@ export function handleGeminiLiveRelay(clientWs, req) {
                 voiceName: VOICE_NAME
               }
             }
-          },
-          thinkingConfig: {
-            thinkingLevel: 'minimal' // Essential for sub-second conversational latency
           },
           temperature: 0.6
         },
