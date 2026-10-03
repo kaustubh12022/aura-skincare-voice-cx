@@ -37,7 +37,7 @@ export const SAMPLE_ORDERS = [
   }
 ];
 
-export default function SampleOrders({ onSelectPrompt, isCallActive }) {
+export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) {
   const [copiedId, setCopiedId] = useState(null);
 
   const handleCopy = (id) => {
@@ -47,31 +47,48 @@ export default function SampleOrders({ onSelectPrompt, isCallActive }) {
   };
 
   return (
-    <div className="glass-panel p-5 w-full">
-      <div className="flex items-center justify-between pb-3 border-b border-[#EBE5DC] mb-4">
-        <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-[#C86D76]" />
-          <h2 className="text-sm font-semibold tracking-wide text-[#1C1917] font-brand">
-            Evaluator Test Helper — Mock Orders Database
-          </h2>
+    <div className="w-full">
+      <div className="flex items-center justify-between pb-3.5 border-b border-[#EBE5DC] mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-[#FAF8F5] border border-[#EBE5DC] flex items-center justify-center text-[#C86D76]">
+            <Package className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold tracking-wide text-[#1C1917] font-brand">
+              Active Client Orders Ledger
+            </h2>
+            <p className="text-[11px] text-[#78716C]">
+              Reference order profiles for real-time status & policy lookups
+            </p>
+          </div>
         </div>
-        <span className="text-xs text-[#78716C] flex items-center gap-1">
-          <Info className="w-3.5 h-3.5 text-[#A8A29E]" /> Click ID to copy
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-[#78716C] hidden sm:flex items-center gap-1">
+            <Info className="w-3.5 h-3.5 text-[#A8A29E]" /> Click ID to copy
+          </span>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 rounded-full text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF8F5] border border-[#EBE5DC] transition-colors"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {SAMPLE_ORDERS.map((order) => (
           <div
             key={order.id}
-            className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#EBE5DC] hover:border-[#DFD7CC] hover:shadow-sm transition-all flex flex-col justify-between gap-3 text-left"
+            className="p-4 rounded-2xl bg-[#FAF8F5]/80 border border-[#EBE5DC] hover:border-[#DFD7CC] hover:shadow-xs transition-all flex flex-col justify-between gap-3 text-left"
           >
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2.5">
                 <button
                   onClick={() => handleCopy(order.id)}
-                  className="font-mono text-xs font-bold text-[#A9525B] hover:text-[#8C434A] flex items-center gap-1.5 bg-[#FDF2F4] px-2.5 py-0.5 rounded-md border border-[#F1C2CA] shadow-2xs transition-colors"
-                  title="Click to copy ID"
+                  className="font-mono text-xs font-bold text-[#A9525B] hover:text-[#8C434A] flex items-center gap-1.5 bg-[#FDF2F4] px-2.5 py-1 rounded-md border border-[#F1C2CA] shadow-2xs transition-colors cursor-pointer"
+                  title="Click to copy Order ID"
                 >
                   {order.id}
                   {copiedId === order.id ? (
@@ -81,7 +98,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive }) {
                   )}
                 </button>
                 <span
-                  className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${order.statusColor}`}
+                  className={`text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border font-semibold ${order.statusColor}`}
                 >
                   {order.status}
                 </span>
@@ -89,23 +106,26 @@ export default function SampleOrders({ onSelectPrompt, isCallActive }) {
 
               <h4 className="text-xs font-semibold text-[#1C1917] line-clamp-1">{order.product}</h4>
               <p className="text-[11px] text-[#78716C] mt-0.5">
-                Customer: <span className="text-[#44403C] font-medium">{order.customer}</span> ({order.amount})
+                Client: <span className="text-[#44403C] font-medium">{order.customer}</span> • {order.amount}
               </p>
-              <p className="text-[11px] text-[#78716C] mt-1 italic leading-tight">
+              <p className="text-[11px] text-[#78716C] mt-1.5 leading-snug">
                 {order.notes}
               </p>
             </div>
 
-            <div className="pt-2 border-t border-[#EBE5DC]/80 space-y-2">
-              <div className="p-2 rounded-lg bg-white border border-[#EBE5DC] text-[10px] text-[#57534E] leading-tight">
-                <strong className="text-[#1C1917] block mb-0.5">Policy Status:</strong> {order.policyNote}
+            <div className="pt-2.5 border-t border-[#EBE5DC]/80 space-y-2">
+              <div className="p-2 rounded-xl bg-white border border-[#EBE5DC] text-[10px] text-[#57534E] leading-relaxed">
+                <strong className="text-[#1C1917] block mb-0.5">Policy Outcome:</strong> {order.policyNote}
               </div>
               {isCallActive && onSelectPrompt && (
                 <button
-                  onClick={() => onSelectPrompt(order.promptSuggestion)}
-                  className="w-full text-[11px] py-1.5 px-2.5 rounded-lg bg-[#FDF2F4] hover:bg-[#FBEAEB] border border-[#F1C2CA] text-[#A9525B] font-medium flex items-center justify-center gap-1 transition-colors shadow-2xs"
+                  onClick={() => {
+                    onSelectPrompt(order.promptSuggestion);
+                    if (onClose) onClose();
+                  }}
+                  className="w-full text-[11px] py-1.5 px-2.5 rounded-xl bg-[#FDF2F4] hover:bg-[#FBEAEB] border border-[#F1C2CA] text-[#A9525B] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
                 >
-                  <span>Ask Aria this query</span>
+                  <span>Inquire about this order</span>
                   <ArrowUpRight className="w-3 h-3 text-[#C86D76]" />
                 </button>
               )}

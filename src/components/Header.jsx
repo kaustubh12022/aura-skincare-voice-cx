@@ -1,43 +1,47 @@
 import React from 'react';
-import { Sparkles, Activity, ShieldCheck, Headphones } from 'lucide-react';
+import { Sparkles, Shield, Clock, Compass, HelpCircle } from 'lucide-react';
 
-export default function Header({ isCallActive, callState }) {
+export default function Header({ onOpenDemoGuide }) {
   return (
-    <header className="w-full max-w-6xl mx-auto pt-6 pb-4 px-4 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-[#EBE5DC]">
-      <div className="flex items-center gap-3.5">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#C86D76] via-[#E8A2A8] to-[#C5A880] p-[2px] shadow-sm">
-          <div className="w-full h-full bg-[#FAF8F5] rounded-2xl flex items-center justify-center">
-            <span className="text-[#C86D76] font-brand text-2xl font-bold italic">A</span>
-          </div>
+    <header className="w-full max-w-6xl mx-auto pt-7 pb-5 px-6 flex flex-col md:flex-row items-center justify-between gap-5 border-b border-[#EBE5DC]">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#C86D76]/20 via-[#FAF8F5] to-[#C5A880]/30 border border-[#EBE5DC] p-1 flex items-center justify-center shadow-xs">
+          <span className="text-[#C86D76] font-brand text-2xl font-serif italic">A</span>
         </div>
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#1C1917] font-brand">
-              Aura Skincare
+        <div className="text-left">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-wider text-[#1C1917] font-brand uppercase">
+              Aura
             </h1>
-            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[#FDF2F4] border border-[#F1C2CA] text-[#A9525B] font-medium tracking-wide">
-              AI Voice Concierge
+            <span className="text-[10px] tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-[#FAF8F5] border border-[#EBE5DC] text-[#78716C] font-medium">
+              Private Concierge
             </span>
           </div>
-          <p className="text-xs md:text-sm text-[#78716C] mt-0.5">
-            Meet <strong className="text-[#C86D76] font-semibold">Aria</strong> — Your Personal Botanical Beauty Advisor
+          <p className="text-xs text-[#78716C] mt-0.5 tracking-wide">
+            Haute Botanicals & Personal Client Advisory
           </p>
         </div>
       </div>
 
-      <div className="flex items-center flex-wrap gap-2 text-xs">
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#EBE5DC] text-[#44403C] shadow-sm">
-          <Headphones className="w-3.5 h-3.5 text-[#C86D76]" />
-          <span>Gemini 3.1 Live API</span>
+      <div className="flex items-center flex-wrap gap-2.5 text-xs">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 border border-[#EBE5DC] text-[#44403C] shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-[#15803D] animate-pulse" />
+          <span className="text-[11px] font-medium tracking-wide">Aria Available Live</span>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#EBE5DC] text-[#44403C] shadow-sm">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#15803D]" />
-          <span>Strict Brand Guardrails</span>
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 border border-[#EBE5DC] text-[#78716C] shadow-xs">
+          <Shield className="w-3.5 h-3.5 text-[#C5A880]" />
+          <span className="text-[11px] tracking-wide">Authentic Formulations</span>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#EBE5DC] text-[#44403C] shadow-sm">
-          <Activity className="w-3.5 h-3.5 text-[#B45309]" />
-          <span>~300ms Conversational Latency</span>
-        </div>
+        {onOpenDemoGuide && (
+          <button
+            onClick={onOpenDemoGuide}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#FDF2F4] border border-[#EBE5DC] hover:border-[#F1C2CA] text-[#78716C] hover:text-[#A9525B] transition-all text-[11px] shadow-xs cursor-pointer"
+            title="View Sample Order Records for Testing"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-[#C86D76]" />
+            <span className="font-medium">Order Lookup Guide</span>
+          </button>
+        )}
       </div>
     </header>
   );

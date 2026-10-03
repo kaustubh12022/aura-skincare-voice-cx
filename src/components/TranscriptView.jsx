@@ -94,26 +94,11 @@ export default function TranscriptView({ transcripts, toolEvents, callState }) {
           })
         )}
 
-        {/* Live tool calling notification badge */}
-        {toolEvents && toolEvents.length > 0 && (
-          <div className="py-1">
-            {toolEvents.slice(-2).map((tool, tIdx) => (
-              <div
-                key={tIdx}
-                className="my-1.5 mx-auto max-w-sm px-3.5 py-1 rounded-full bg-[#FFFBEB] border border-[#FDE68A] text-[#B45309] text-[11px] flex items-center justify-center gap-1.5 shadow-sm animate-pulse"
-              >
-                <Wrench className="w-3 h-3 text-[#D97706]" />
-                <span>Checked records: <code>{tool.tool || tool.name}({JSON.stringify(tool.args || {})})</code></span>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Thinking indicator */}
         {callState === CALL_STATES.THINKING && (
-          <div className="flex items-center gap-2 text-xs text-[#B45309] italic pl-9">
-            <span className="w-2 h-2 rounded-full bg-[#D97706] animate-ping" />
-            <span>Aria is checking order database...</span>
+          <div className="flex items-center gap-2.5 text-xs text-[#78716C] italic pl-9 animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C86D76]" />
+            <span>Aria is reviewing your account details...</span>
           </div>
         )}
       </div>
