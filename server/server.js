@@ -42,7 +42,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     service: 'Aura Skincare AI Voice Relay',
-    model: 'gemini-3.1-flash-live-preview',
+    model: 'gemini-3.8-live',
     apiKeyConfigured: hasApiKey,
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
