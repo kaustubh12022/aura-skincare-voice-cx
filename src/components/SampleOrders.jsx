@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Copy, Check, Info, ArrowUpRight } from 'lucide-react';
+import { Package, Copy, Check, Info, ArrowUpRight, RotateCcw } from 'lucide-react';
 
 export const SAMPLE_ORDERS = [
   {
@@ -37,13 +37,28 @@ export const SAMPLE_ORDERS = [
   }
 ];
 
-export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) {
+export default function SampleOrders({ onSelectPrompt, isCallActive }) {
   const [copiedId, setCopiedId] = useState(null);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleCopy = (id) => {
     navigator.clipboard.writeText(id);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleResetDatabase = async () => {
+    setIsResetting(true);
+    try {
+      await fetch('/api/orders/reset', { method: 'POST' });
+      setResetSuccess(true);
+      setTimeout(() => setResetSuccess(false), 3000);
+    } catch (e) {
+      console.error('Reset failed', e);
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   return (
@@ -66,14 +81,28 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
           <span className="text-[11px] text-[#78716C] hidden sm:flex items-center gap-1">
             <Info className="w-3.5 h-3.5 text-[#A8A29E]" /> Click ID to copy
           </span>
-          
-            <!--
-              onClick={onClose}
-              className="p-1 rounded-full text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF8F5] border border-[#EBE5DC] transition-colors"
-            >
-              
-            -->
-          )}
+          <button
+            onClick={handleResetDatabase}
+            disabled={isResetting}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors text-[11px] font-medium shadow-xs cursor-pointer ${
+              resetSuccess 
+                ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#15803D]' 
+                : 'bg-white hover:bg-[#FAF8F5] border-[#EBE5DC] text-[#78716C] hover:text-[#1C1917]'
+            }`}
+            title="Reset Mock Database"
+          >
+            {resetSuccess ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>DB Reset</span>
+              </>
+            ) : (
+              <>
+                <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
+                <span>Reset Database</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -85,7 +114,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
           >
             <div>
               <div className="flex items-center justify-between mb-2.5">
-                <!--
+                <button
                   onClick={() => handleCopy(order.id)}
                   className="font-mono text-xs font-bold text-[#A9525B] hover:text-[#8C434A] flex items-center gap-1.5 bg-[#FDF2F4] px-2.5 py-1 rounded-md border border-[#F1C2CA] shadow-2xs transition-colors cursor-pointer"
                   title="Click to copy Order ID"
@@ -96,7 +125,7 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
                   ) : (
                     <Copy className="w-3 h-3 text-[#C86D76]" />
                   )}
-                -->
+                </button>
                 <span
                   className={`text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border font-semibold ${order.statusColor}`}
                 >
@@ -118,16 +147,13 @@ export default function SampleOrders({ onSelectPrompt, isCallActive, onClose }) 
                 <strong className="text-[#1C1917] block mb-0.5">Policy Outcome:</strong> {order.policyNote}
               </div>
               {isCallActive && onSelectPrompt && (
-                <!--
-                  onClick={() => {
-                    onSelectPrompt(order.promptSuggestion);
-                    if (onClose) onClose();
-                  }}
+                <button
+                  onClick={() => onSelectPrompt(order.promptSuggestion)}
                   className="w-full text-[11px] py-1.5 px-2.5 rounded-xl bg-[#FDF2F4] hover:bg-[#FBEAEB] border border-[#F1C2CA] text-[#A9525B] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
                 >
                   <span>Inquire about this order</span>
                   <ArrowUpRight className="w-3 h-3 text-[#C86D76]" />
-                -->
+                </button>
               )}
             </div>
           </div>

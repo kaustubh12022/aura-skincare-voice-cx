@@ -16,7 +16,7 @@ import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
 import rateLimit from 'express-rate-limit';
 import { handleGeminiLiveRelay } from './geminiLiveRelay.js';
-import { getOrderDetails, getAllOrders } from './orderDatabase.js';
+import { getOrderDetails, getAllOrders, resetOrderDatabase } from './orderDatabase.js';
 
 // Load environment variables
 dotenv.config();
@@ -95,6 +95,14 @@ app.get('/api/orders', (req, res) => {
     status: 'success',
     count: orders.length,
     orders
+  });
+});
+
+app.post('/api/orders/reset', (req, res) => {
+  resetOrderDatabase();
+  res.status(200).json({
+    status: 'success',
+    message: 'Mock database has been reset to original seed data.'
   });
 });
 
