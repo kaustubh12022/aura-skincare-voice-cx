@@ -1,7 +1,7 @@
 # 🌿 Aura Skincare — AI Voice Customer Support Agent ("Aria")
 
-> **DataStraw Assessment Test | Hiring Assignment: Build an AI Voice CX Agent for a D2C Brand**  
-> Candidate: **Kaustubh Sanjay Kale**  
+> **Personal Project: AI Voice CX Agent for a D2C Brand**  
+> Creator: **Kaustubh Sanjay Kale**  
 > Live Application URL: *(Deployed on Render)*  
 > GitHub Repository: [https://github.com/kaustubh12022/aura-skincare-voice-cx](https://github.com/kaustubh12022/aura-skincare-voice-cx)  
 > Technology: **Google Gemini 3.8 Live (Multimodal WebSocket API) • Web Audio API • Node.js/Express • React (Vite)**
@@ -27,7 +27,7 @@ This project is a browser-based, real-time AI Voice Customer Support Agent built
 
 * **Agent Persona:** **Aria** from Aura Skincare.
 * **Tone & Demeanor:** Warm, empathetic, professional, and concise with a natural Indian English conversational cadence.
-* **Interaction:** Evaluators click **"Start Voice Call"**, speak naturally using their computer microphone, and hear Aria respond in real time through their speakers with sub-second latency (~300ms).
+* **Interaction:** Users click **"Start Voice Call"**, speak naturally using their computer microphone, and hear Aria respond in real time through their speakers with sub-second latency (~300ms).
 
 ---
 
@@ -130,7 +130,7 @@ Here is how the entire system works under the hood, explained simply from end to
 
 ---
 
-## 6. Optional Features Implemented (Section 8)
+## 6. Optional Features Implemented
 
 * ⚡ **Barge-in / Interruption Handling:** When the customer speaks while Aria is speaking, playback cuts off instantly (<10ms) and Aria listens to the interruption.
 * ⚡ **Ultra-Low Latency:** Speech-to-speech multimodal streaming delivers ~300ms conversational response time.
@@ -139,7 +139,7 @@ Here is how the entire system works under the hood, explained simply from end to
 
 ---
 
-## 7. Section 9: Tell Us How You Think
+## 7. Design Decisions & Architecture Choices
 
 ### 1. Why did you choose your particular architecture and technology stack?
 Instead of a traditional modular pipeline (**Speech-to-Text $\to$ LLM $\to$ Text-to-Speech**), I chose **Google Gemini 3.8 Live API (`bidiGenerateContent` over WebSockets)** with a Node.js/Express relay and a React frontend:
@@ -147,7 +147,7 @@ Instead of a traditional modular pipeline (**Speech-to-Text $\to$ LLM $\to$ Text
 * **Security & Clean Architecture:** Running a server-side proxy protects the `GEMINI_API_KEY`. The backend is heavily hardened for production: I implemented **express-rate-limit** (100 req/15min) against DoS attacks, **strict CORS** policies, explicit **Origin verification** on the WebSocket upgrade to prevent CSWSH (Cross-Site WebSocket Hijacking), and a **5-minute max session duration** to forcefully close idle websockets and prevent API quota exhaustion.
 * **Zero-CORS Full-Stack Hosting:** The Express backend serves both the `/ws` WebSocket endpoint and the static production `dist/` bundle on a single port, making public deployment seamless.
 
-### 2. What was the most difficult part of the assignment, and how did you solve it?
+### 2. What was the most difficult part of the project, and how did you solve it?
 The most challenging aspect was **browser Web Audio lifecycle constraints and hardware compatibility**:
 * **The Problem:** Modern browsers automatically mute or suspend `AudioContext` unless it is explicitly unlocked inside a synchronous user gesture (click event). Furthermore, requesting `sampleRate: 16000` inside `getUserMedia` on Windows often throws an `OverconstrainedError` on Realtek drivers.
 * **The Solution:** 
@@ -170,7 +170,7 @@ The most challenging aspect was **browser Web Audio lifecycle constraints and ha
 
 ---
 
-## 8. Step-by-Step Evaluator Testing Guide
+## 8. Step-by-Step Testing Guide
 
 When testing the application, click **"Start Voice Call"**, allow microphone permissions, and try these test scenarios:
 
@@ -217,8 +217,3 @@ npm test
 All **122 automated unit, integration, and E2E tests** pass with 100% test coverage across audio utilities, database lookups, policy rules, and dialogue scenarios.
 
 ---
-
-## 📄 Submission Details
-* **Candidate:** Kaustubh Sanjay Kale
-* **Email Recipients:** `ozair.shaikh@datastraw.in`, `aryan.jaiswal@datastraw.in`, CC: `talent@datastraw.in`
-* **Subject:** `AI Voice Agent Assignment - Kaustubh Sanjay Kale`

@@ -73,7 +73,7 @@ Full-stack Node.js / Express backend with WebSocket relay proxy to Google Gemini
 
 ## Code Layout
 ```
-datastraw/
+aura-skincare-voice-cx/
 ├── .env.example
 ├── README.md
 ├── package.json

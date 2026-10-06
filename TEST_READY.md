@@ -93,7 +93,7 @@ npx vitest run tests/e2e/adversarialIntegrity.test.js
 ## 5. Verification Results Snapshot
 
 ```text
- RUN  v2.1.9 C:/Users/kalek/Desktop/datastraw
+ RUN  v2.1.9 C:/Users/kalek/Desktop/aura-skincare-voice-cx
 
  ✓ tests/unit/brandPolicy.test.js (22 tests) 21ms
  ✓ tests/unit/audioUtils.test.js (15 tests) 37ms
